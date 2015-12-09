@@ -1,8 +1,7 @@
 #!/bin/bash
 git init
-master="https://github.com/JonyCseDu/System_programming_lab.git"
 echo "INITIATING PROJECT -- setting remote's origin"
-git remote add origin master
+git remote add origin https://github.com/JonyCseDu/System_programming_lab.git
 
 echo "POSSIBLE COMMAND : exit, push, pull"
 com="command"
@@ -18,12 +17,12 @@ do
 		git add -A
 		read -p "Enter Commit Message: " msg
 		git commit -m "$msg"
-		git push master
+		git push https://github.com/JonyCseDu/System_programming_lab.git
 
 	elif [ $com == "pull" ] 
 	then
 		echo "PULLING DATA FROM REMOTE"
-		git pull master
+		git pull https://github.com/JonyCseDu/System_programming_lab.git
 
 	elif [ "$com" != "exit" ]
 	then
