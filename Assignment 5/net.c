@@ -7,23 +7,25 @@
 #include <sys/ipc.h>
 #include <sys/sem.h>
 #include <sys/shm.h>
+
 #define CUSTOMERS 0
 #define BARBERS 1
 #define MUTEX 2
+
 #define CHAIRS 5
 
-void up(int sem_id,int sem_num,struct sembuf *semaphore) {
+void up(int sem_id, int sem_num, struct sembuf *semaphore) {
   semaphore->sem_num=sem_num;
   semaphore->sem_op=1;
   semaphore->sem_flg=0;
-  semop(sem_id,semaphore,1);
+  semop(sem_id, semaphore, 1);
 }
 
 void down(int sem_id,int sem_num,struct sembuf *semaphore) {
   semaphore->sem_num=sem_num;
   semaphore->sem_op=-1;
   semaphore->sem_flg=0;
-  semop(sem_id,semaphore,1);
+  semop(sem_id, semaphore, 1);
 }
 
 void initSem(int sem_id, int sem_num, int val) {
@@ -44,8 +46,8 @@ int main() {
   struct sembuf semaphore;
   int count=1;
 
-  shm_id=shmget(shm_key, sizeof(int), IPC_CREAT|0666); /// returns the identifier of the System V shared memory segment associated with the value of the argument key
-  sem_id=semget(sem_key, 3, IPC_CREAT|0666);
+  shm_id=shmget(shm_key, sizeof(int), IPC_CREAT); /// returns the identifier of the System V shared memory segment associated with the value of the argument key
+  sem_id=semget(sem_key, 3, IPC_CREAT);
 
   waiting=shmat(shm_id, NULL, 0); /// attaches the System V shared memory segment identified by shmid to the address space of the calling process
   *waiting=0;
@@ -61,18 +63,16 @@ int main() {
     /* The barber part. */
 
     while(1) {
-
       down(sem_id,CUSTOMERS,&semaphore);
-
       down(sem_id,MUTEX,&semaphore);
 
       *waiting=*waiting-1;
 
       up(sem_id,BARBERS,&semaphore);
-
       up(sem_id,MUTEX,&semaphore);
 
       printf("The barber is now cutting hair.\n");
+
 
       sleep(6);   /* Slowly cut the hair */
 
@@ -85,29 +85,18 @@ int main() {
     /* The customer part. */
 
     while(1) {
-
-      sleep(1);   /* Customers come in fast */
-
-      down(sem_id,MUTEX,&semaphore);
-
-      if(*waiting < CHAIRS) {
-
-      printf("Customer %d is seated.\n",count++);
-
-      *waiting=*waiting+1;
-
-      up(sem_id,CUSTOMERS,&semaphore);
-
-      up(sem_id,MUTEX,&semaphore);
-
+        //printf("%d", rand()%10);
+          //sleep(rand()%5);   /* Customers come in fast */
+          down(sem_id,MUTEX,&semaphore);
+          if(*waiting < CHAIRS) {
+          printf("Customer %d is seated.\n",count++);
+          *waiting=*waiting+1;
+          up(sem_id,CUSTOMERS,&semaphore);
+          up(sem_id,MUTEX,&semaphore);
       }
-
       else {
-
-      printf("Customer %d left the shop.\n",count++);
-
-      up(sem_id,MUTEX,&semaphore);
-
+          printf("Customer %d left the shop.\n",count++);
+          up(sem_id,MUTEX,&semaphore);
       }
 
     }
